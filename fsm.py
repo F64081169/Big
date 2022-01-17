@@ -3,10 +3,15 @@ from itertools import count
 from transitions.extensions import GraphMachine
 import datetime
 from dateutil import rrule
+import schedule
+import time
 
-from utils import send_showAll, send_text_message,send_showAll
+from utils import send_showAll, send_text_message,send_showAll,job_that_executes_once
 
-expiredate = []
+expireyear = []
+expiremonth = []
+expireday = []
+oneday = []
 class TocMachine(GraphMachine):
     
     date = []
@@ -54,12 +59,25 @@ class TocMachine(GraphMachine):
     def on_enter_comfirm(self, event):
         print("I'm entering state1")
         TocMachine.date.append(event.message.text)
-        expiredate.append(TocMachine.date)
+        expire = event.message.text
+        
+         
+        expireyear.append(expire.split()[0])
+        expiremonth.append(expire.split()[1])
+        expireday.append(expire.split()[2])
+        today = datetime.date.today() 
+        print(int(expire.split()[0]))
+        print(int(expire.split()[1]))
+        print(int(expire.split()[2]))
+        oneday.append(datetime.date(int(expire.split()[0]),int(expire.split()[1]),int(expire.split()[2])))
+        
+        days = rrule.rrule(rrule.DAILY, dtstart=today, until=oneday).count()
+        schedule.every(days).day.at("8:30").do(job_that_executes_once("你的"+TocMachine.foodtype[TocMachine.count])+"已到期")
         reply_token = event.reply_token
-        send_text_message(reply_token, "已收到日期，跟你確認一下機制:\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count])
+        send_text_message(reply_token, "已收到日期，跟你確認一下機制:\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count]+ "\n"+str(days))
         TocMachine.count+=1
         self.go_back()
-    
+     
 
 
 

@@ -9,7 +9,8 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 
 from fsm import TocMachine
 from utils import send_text_message
-
+import schedule
+import time
 load_dotenv()
 
 notify = 1
@@ -108,7 +109,7 @@ def webhook_handler():
         if response == False:
             send_text_message(event.reply_token, "Not Entering any State")
         if notify == 1:
-            push_message("for testing")
+            #push_message("for testing")
             notify = 0
         
 
