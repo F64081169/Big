@@ -14,21 +14,16 @@ load_dotenv()
 
 
 machine = TocMachine(
-    states=["user", "state1", "state2"],
+    states=["user", "enterFood","enterDate","comfirm", "state2"],
     transitions=[
-        {
-            "trigger": "advance",
-            "source": "user",
-            "dest": "state1",
-            "conditions": "is_going_to_state1",
-        },
-        {
-            "trigger": "advance",
-            "source": "user",
-            "dest": "state2",
-            "conditions": "is_going_to_state2",
-        },
-        {"trigger": "go_back", "source": ["state1", "state2"], "dest": "user"},
+        #輸入食材流程
+        {"trigger": "advance","source": "user","dest": "enterFood","conditions": "is_going_to_enterFood",},
+        {"trigger": "advance","source": "enterFood","dest": "enterDate","conditions": "is_going_to_enterDate",},
+        {"trigger": "advance","source": "enterDate","dest": "comfirm","conditions": "is_going_to_comfirm",},
+
+        {"trigger": "advance","source": "user","dest": "state2","conditions": "is_going_to_state2",},
+
+        {"trigger": "go_back", "source": ["enterFood", "state2","enterDate","comfirm"], "dest": "user"},
     ],
     initial="user",
     auto_transitions=False,
