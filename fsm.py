@@ -1,11 +1,14 @@
 #from asyncio.windows_events import NULL
 from itertools import count
 from transitions.extensions import GraphMachine
+import datetime
+from dateutil import rrule
 
 from utils import send_showAll, send_text_message,send_showAll
 
-
+expiredate = []
 class TocMachine(GraphMachine):
+    
     date = []
     foodtype = []
     num = []
@@ -51,6 +54,7 @@ class TocMachine(GraphMachine):
     def on_enter_comfirm(self, event):
         print("I'm entering state1")
         TocMachine.date.append(event.message.text)
+        expiredate.append(TocMachine.date)
         reply_token = event.reply_token
         send_text_message(reply_token, "已收到日期，跟你確認一下機制:\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count])
         TocMachine.count+=1

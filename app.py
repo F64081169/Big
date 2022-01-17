@@ -12,7 +12,7 @@ from utils import send_text_message
 
 load_dotenv()
 
-
+notify = 1
 machine = TocMachine(
     states=["user", "enterFood","enterDate","comfirm", "showAll"],
     transitions=[
@@ -32,6 +32,9 @@ machine = TocMachine(
 
 app = Flask(__name__, static_url_path="")
 
+def push_message(push_text_str):
+    line_bot_api.push_message(user_id, TextSendMessage(text=push_text_str))
+    
 
 # get channel_secret and channel_access_token from your environment variable
 channel_secret = os.getenv("LINE_CHANNEL_SECRET", None)
@@ -45,6 +48,8 @@ if channel_access_token is None:
 
 line_bot_api = LineBotApi(channel_access_token)
 parser = WebhookParser(channel_secret)
+user_id = "U227736503c290a9f5fbe50b3423d5df2"
+
 
 
 @app.route("/callback", methods=["POST"])
@@ -77,6 +82,7 @@ def callback():
 @app.route("/webhook", methods=["POST"])
 def webhook_handler():
     signature = request.headers["X-Line-Signature"]
+    notify = 1
     # get request body as text
     body = request.get_data(as_text=True)
     app.logger.info(f"Request body: {body}")
@@ -86,7 +92,7 @@ def webhook_handler():
         events = parser.parse(body, signature)
     except InvalidSignatureError:
         abort(400)
-
+    
     # if event is MessageEvent and message is TextMessage, then echo text
     for event in events:
         if not isinstance(event, MessageEvent):
@@ -97,9 +103,14 @@ def webhook_handler():
             continue
         print(f"\nFSM STATE: {machine.state}")
         print(f"REQUEST BODY: \n{body}")
+        
         response = machine.advance(event)
         if response == False:
             send_text_message(event.reply_token, "Not Entering any State")
+        if notify == 1:
+            push_message("for testing")
+            notify = 0
+        
 
     return "OK"
 
