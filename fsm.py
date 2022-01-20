@@ -1,6 +1,10 @@
 #from asyncio.windows_events import NULL
+import os
+import sys
 from itertools import count
 from transitions.extensions import GraphMachine
+from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from linebot import LineBotApi, WebhookParser
 import datetime
 from dateutil import rrule
 import schedule
@@ -9,6 +13,8 @@ from apscheduler.schedulers.background import BlockingScheduler,BackgroundSchedu
 from apscheduler.triggers.date import DateTrigger
 
 from utils import send_showAll, send_text_message,send_showAll,job_that_executes_once
+user_id = "U227736503c290a9f5fbe50b3423d5df2"
+channel_access_token = os.getenv("LINE_CHANNEL_ACCESS_TOKEN", None)
 
 expireyear = []
 expiremonth = []
@@ -23,6 +29,8 @@ class TocMachine(GraphMachine):
     def __init__(self, **machine_configs):
         self.machine = GraphMachine(model=self, **machine_configs)
     def my_job():
+        line_bot_api = LineBotApi(channel_access_token)
+        line_bot_api.push_message(user_id, TextSendMessage(text=TocMachine.foodtype[count]+'到期了！'))
         print('到期了')
         
     #輸入食材流程
@@ -81,7 +89,7 @@ class TocMachine(GraphMachine):
         #schedule.every(days).day.at("8:30").do(job_that_executes_once("你的"+TocMachine.foodtype[TocMachine.count])+"已到期")
         send_text_message(reply_token, "已收到日期，跟你確認一下機制:\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count])#+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count]+ "\n"+str(days))
         scheduler = BackgroundScheduler()
-        intervalTrigger=DateTrigger(run_date=expire.split()[0]+'-'+expire.split()[1]+'-'+expire.split()[2]+ 'T08:00:00+00:00')
+        intervalTrigger=DateTrigger(run_date=expire.split()[0]+'-'+expire.split()[1]+'-'+expire.split()[2]+ 'T08:00:00+08:00')
         scheduler.add_job(TocMachine.my_job, intervalTrigger, id='my_job_id'+str(TocMachine.count))
         scheduler.start()
         
