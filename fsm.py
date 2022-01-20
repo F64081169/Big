@@ -5,6 +5,8 @@ import datetime
 from dateutil import rrule
 import schedule
 import time
+from apscheduler.schedulers.background import BlockingScheduler
+from apscheduler.triggers.date import DateTrigger
 
 from utils import send_showAll, send_text_message,send_showAll,job_that_executes_once
 
@@ -20,10 +22,12 @@ class TocMachine(GraphMachine):
     count = 0
     def __init__(self, **machine_configs):
         self.machine = GraphMachine(model=self, **machine_configs)
+    def my_job():
+        print('到期了')
     #輸入食材流程
     def is_going_to_enterFood(self, event):
         text = event.message.text
-        return text.lower() == "開始紀錄"
+        return text.lower() == "開始記錄"
 
     def is_going_to_enterDate(self, event):
         text = event.message.text
@@ -69,12 +73,18 @@ class TocMachine(GraphMachine):
         print(int(expire.split()[0]))
         print(int(expire.split()[1]))
         print(int(expire.split()[2]))
-        oneday.append(datetime.date(int(expire.split()[0]),int(expire.split()[1]),int(expire.split()[2])))
-        
-        days = rrule.rrule(rrule.DAILY, dtstart=today, until=oneday).count()
-        schedule.every(days).day.at("8:30").do(job_that_executes_once("你的"+TocMachine.foodtype[TocMachine.count])+"已到期")
         reply_token = event.reply_token
-        send_text_message(reply_token, "已收到日期，跟你確認一下機制:\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count]+ "\n"+str(days))
+        #oneday.append(datetime.date(int(expire.split()[0]),int(expire.split()[1]),int(expire.split()[2])))
+        
+        #days = rrule.rrule(rrule.DAILY, dtstart=today, until=oneday).count()
+        #schedule.every(days).day.at("8:30").do(job_that_executes_once("你的"+TocMachine.foodtype[TocMachine.count])+"已到期")
+        send_text_message(reply_token, "已收到日期，跟你確認一下機制:\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count])#+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count]+ "\n"+str(days))
+        #scheduler = BlockingScheduler()
+        #intervalTrigger=DateTrigger(run_date='2022-01-20 11:25:00')
+        #scheduler.add_job(TocMachine.my_job, intervalTrigger, id='my_job_id1')
+        #scheduler.start()
+        
+        
         TocMachine.count+=1
         self.go_back()
      
@@ -94,3 +104,37 @@ class TocMachine(GraphMachine):
 
     def on_exit_showAll(self):
         print("Leaving state2")
+
+    # delete
+    def is_going_to＿deletedfood(self, event):
+        text = event.message.text
+        return text.lower() == "刪除食材"
+
+    def on_enter_deletedfood(self, event):
+        print("I'm entering state1")
+
+        reply_token = event.reply_token
+        send_text_message(reply_token, "請輸入要刪除的菜名")
+
+    def is_going_to＿delete(self, event):
+        text = event.message.text
+        return True
+
+    def on_enter_delete(self, event):
+        print("I'm entering state1")
+        #TocMachine.foodtype.append(event.message.text)
+        length = len(TocMachine.foodtype)
+        for i in range(0,length):
+            if event.message.text == TocMachine.foodtype[i]:
+                TocMachine.foodtype[i] = ""
+                TocMachine.date[i] = ""
+                #TocMachine.num[i] = ""
+                break
+        
+
+        reply_token = event.reply_token 
+        send_text_message(reply_token, "刪除成功！")
+
+    def on_exit_delete(self): 
+        print("Leaving state2")
+

@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from linebot import LineBotApi, WebhookParser
 from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from apscheduler.schedulers.background import BlockingScheduler
+from apscheduler.triggers.date import DateTrigger
 
 from fsm import TocMachine
 from utils import send_text_message
@@ -15,7 +17,7 @@ load_dotenv()
 
 notify = 1
 machine = TocMachine(
-    states=["user", "enterFood","enterDate","comfirm", "showAll"],
+    states=["user", "enterFood","enterDate","comfirm", "showAll","deletedfood", "delete"],
     transitions=[
         #輸入食材流程
         {"trigger": "advance","source": "user","dest": "enterFood","conditions": "is_going_to_enterFood",},
@@ -23,7 +25,10 @@ machine = TocMachine(
         {"trigger": "advance","source": "enterDate","dest": "comfirm","conditions": "is_going_to_comfirm",},
         #顯示冰箱的菜
         {"trigger": "advance","source": "user","dest": "showAll","conditions": "is_going_to_showAll",},
-
+        #刪除食材
+        {"trigger": "advance","source": "user","dest": "deletedfood","conditions": "is_going_to_deletedfood",},
+        {"trigger": "advance","source": "deletedfood","dest": "delete","conditions": "is_going_to_delete",},
+        
         {"trigger": "go_back", "source": ["enterFood", "showAll","enterDate","comfirm"], "dest": "user"},
     ],
     initial="user",
@@ -87,6 +92,7 @@ def webhook_handler():
     # get request body as text
     body = request.get_data(as_text=True)
     app.logger.info(f"Request body: {body}")
+    
 
     # parse webhook body
     try:

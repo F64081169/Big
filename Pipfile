@@ -16,6 +16,7 @@ requests = "*"
 datetime = "*"
 python-dateutil = "*"
 schedule = "*"
+apscheduler = "*"
 
 [requires]
 python_version = "3.6"
