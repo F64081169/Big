@@ -28,7 +28,7 @@ machine = TocMachine(
         #刪除食材
         {"trigger": "advance","source": "user","dest": "deletedfood","conditions": "is_going_to_deletedfood",},
         {"trigger": "advance","source": "deletedfood","dest": "delete","conditions": "is_going_to_delete",},
-        
+
         {"trigger": "go_back", "source": ["enterFood", "showAll","enterDate","comfirm"], "dest": "user"},
     ],
     initial="user",
@@ -130,4 +130,5 @@ def show_fsm():
 
 if __name__ == "__main__":
     port = os.environ.get("PORT", 8000)
+    
     app.run(host="0.0.0.0", port=port, debug=True)

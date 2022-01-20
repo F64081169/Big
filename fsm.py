@@ -5,7 +5,7 @@ import datetime
 from dateutil import rrule
 import schedule
 import time
-from apscheduler.schedulers.background import BlockingScheduler
+from apscheduler.schedulers.background import BlockingScheduler,BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
 
 from utils import send_showAll, send_text_message,send_showAll,job_that_executes_once
@@ -24,6 +24,7 @@ class TocMachine(GraphMachine):
         self.machine = GraphMachine(model=self, **machine_configs)
     def my_job():
         print('到期了')
+        
     #輸入食材流程
     def is_going_to_enterFood(self, event):
         text = event.message.text
@@ -70,19 +71,19 @@ class TocMachine(GraphMachine):
         expiremonth.append(expire.split()[1])
         expireday.append(expire.split()[2])
         today = datetime.date.today() 
-        print(int(expire.split()[0]))
-        print(int(expire.split()[1]))
-        print(int(expire.split()[2]))
+        print(expire.split()[0])
+        print(expire.split()[1])
+        print(expire.split()[2])
         reply_token = event.reply_token
         #oneday.append(datetime.date(int(expire.split()[0]),int(expire.split()[1]),int(expire.split()[2])))
-        
+         
         #days = rrule.rrule(rrule.DAILY, dtstart=today, until=oneday).count()
         #schedule.every(days).day.at("8:30").do(job_that_executes_once("你的"+TocMachine.foodtype[TocMachine.count])+"已到期")
         send_text_message(reply_token, "已收到日期，跟你確認一下機制:\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count])#+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count]+ "\n"+str(days))
-        #scheduler = BlockingScheduler()
-        #intervalTrigger=DateTrigger(run_date='2022-01-20 11:25:00')
-        #scheduler.add_job(TocMachine.my_job, intervalTrigger, id='my_job_id1')
-        #scheduler.start()
+        scheduler = BackgroundScheduler()
+        intervalTrigger=DateTrigger(run_date=expire.split()[0]+'-'+expire.split()[1]+'-'+expire.split()[2]+ 'T08:00:00+00:00')
+        scheduler.add_job(TocMachine.my_job, intervalTrigger, id='my_job_id'+str(TocMachine.count))
+        scheduler.start()
         
         
         TocMachine.count+=1
