@@ -45,6 +45,10 @@ class TocMachine(GraphMachine):
     def is_going_to_enterDate(self, event):
         text = event.message.text
         return True
+    
+    def is_going_to_enternum(self, event):
+        text = event.message.text
+        return True
 
     def is_going_to_comfirm(self, event):
         text = event.message.text
@@ -73,13 +77,22 @@ class TocMachine(GraphMachine):
         TocMachine.foodtype.append(event.message.text)
         reply_token = event.reply_token
         send_text_message(reply_token, "已收到菜名，請輸入保存期限，屆時會提醒你 "+TocMachine.foodtype[TocMachine.count])
+
+    #輸入數量
+    def on_enter_enternum(self, event):
+        print("I'm entering state1")
+        TocMachine.date.append(event.message.text)
+        reply_token = event.reply_token
+        send_text_message(reply_token, "已收到菜名，請輸入數量，屆時會提醒你 "+TocMachine.foodtype[TocMachine.count])
         
     
     #確認
     def on_enter_comfirm(self, event):
         print("I'm entering state1")
-        TocMachine.date.append(event.message.text)
-        expire = event.message.text
+        TocMachine.num.append(int(event.message.text))
+        #expire = event.message.text
+        length = len(TocMachine.date)
+        expire = TocMachine.date[length - 1]
         
          
         expireyear.append(expire.split()[0])
@@ -94,7 +107,7 @@ class TocMachine(GraphMachine):
          
         #days = rrule.rrule(rrule.DAILY, dtstart=today, until=oneday).count()
         #schedule.every(days).day.at("8:30").do(job_that_executes_once("你的"+TocMachine.foodtype[TocMachine.count])+"已到期")
-        send_text_message(reply_token, "已收到日期，跟你確認一下機制:\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count])#+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count]+ "\n"+str(days))
+        send_text_message(reply_token, "已收到日期，跟你確認一下機制:\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count] + "\n" + str(TocMachine.num[TocMachine.count]))
         scheduler = BackgroundScheduler()
         intervalTrigger=DateTrigger(run_date=expire.split()[0]+'-'+expire.split()[1]+'-'+expire.split()[2]+ 'T08:00:00+08:00')
         scheduler.add_job(TocMachine.my_job, intervalTrigger, id='my_job_id'+str(TocMachine.count))
@@ -114,7 +127,7 @@ class TocMachine(GraphMachine):
         text = "目前冰箱已有食材：\n"
         for i in range (0,TocMachine.count):
             if TocMachine.foodtype[i]!=null[0]:
-                text = text + TocMachine.foodtype[i]+"\t"+TocMachine.date[i]+"\n"
+                text = text + TocMachine.foodtype[i]+"\t"+TocMachine.date[i]+"\t" + str(TocMachine.num[i]) + "\n"
         send_showAll(reply_token,text)
         self.go_back()
 
@@ -160,7 +173,7 @@ class TocMachine(GraphMachine):
         print("I'm entering state1")
 
         reply_token = event.reply_token
-        send_text_message(reply_token, "請輸入要刪除的菜名")
+        send_text_message(reply_token, "請輸入要刪除的菜名及數量")
 
     def is_going_to＿delete(self, event):
         text = event.message.text
@@ -169,18 +182,26 @@ class TocMachine(GraphMachine):
     def on_enter_delete(self, event):
         print("I'm entering state1")
         #TocMachine.foodtype.append(event.message.text)
+        foodtype = event.message.text.split()[0] 
+        foodsnum = event.message.text.split()[1]
         length = len(TocMachine.foodtype)
         flag = 0
         for i in range(0,length):
-            if event.message.text == TocMachine.foodtype[i]:
+            if foodtype == TocMachine.foodtype[i] and int(foodsnum) == TocMachine.num[i]:
                 TocMachine.foodtype.pop(i)
                 TocMachine.date.pop(i)
+                TocMachine.num.pop(i)
                 TocMachine.count = TocMachine.count-1
                 flag = 1
                 #TocMachine.foodtype[i] = "NULL"
-                #TocMachine.date[i] = "NULL"
+                #TocMachine.date[i] = "NULL" 
                 #TocMachine.num[i] = ""
                 break
+            elif foodtype == TocMachine.foodtype[i] and int(foodsnum) < TocMachine.num[i]:
+                TocMachine.num[i] = TocMachine.num[i] - int(foodsnum)
+                flag = 1
+            else:
+                flag = 0
         
         if flag == 0:
             text = "刪除失敗，冰箱沒有欲刪除的食材"
