@@ -127,7 +127,7 @@ class TocMachine(GraphMachine):
         text = "目前冰箱已有食材：\n"
         for i in range (0,TocMachine.count):
             if TocMachine.foodtype[i]!=null[0]:
-                text = text + TocMachine.foodtype[i]+"\t"+TocMachine.date[i]+"\t" + str(TocMachine.num[i]) + "\n"
+                text = text + TocMachine.foodtype[i]+"\t"+TocMachine.date[i]+"\t" + "數量："+str(TocMachine.num[i]) + "\n"
         send_showAll(reply_token,text)
         self.go_back()
 
