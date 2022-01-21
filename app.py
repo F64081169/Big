@@ -9,6 +9,17 @@ from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from apscheduler.schedulers.background import BlockingScheduler
 from apscheduler.triggers.date import DateTrigger
 
+# 連結google sheet
+#import gspread
+#from oauth2client.service_account import ServiceAccountCredentials
+'''
+import sys
+import datetime
+import gspread
+from oauth2client.service_account import ServiceAccountCredentials as SAC
+'''
+#--------
+
 from fsm import TocMachine
 from utils import send_text_message
 import schedule
@@ -17,7 +28,7 @@ load_dotenv()
 
 notify = 1
 machine = TocMachine(
-    states=["user", "enterFood","enterDate","comfirm", "showAll","deletedfood", "delete"],
+    states=["user", "enterFood","enterDate","comfirm", "showAll","deletedfood", "delete","recommand"],
     transitions=[
         #輸入食材流程
         {"trigger": "advance","source": "user","dest": "enterFood","conditions": "is_going_to_enterFood",},
@@ -28,8 +39,10 @@ machine = TocMachine(
         #刪除食材
         {"trigger": "advance","source": "user","dest": "deletedfood","conditions": "is_going_to_deletedfood",},
         {"trigger": "advance","source": "deletedfood","dest": "delete","conditions": "is_going_to_delete",},
+        #推薦食譜一
+        {"trigger": "advance","source": "user","dest": "recommand","conditions": "is_going_to_recommand",},
 
-        {"trigger": "go_back", "source": ["enterFood", "showAll","enterDate","comfirm"], "dest": "user"},
+        {"trigger": "go_back", "source": ["enterFood", "showAll","enterDate","comfirm","delete","recommand"], "dest": "user"},
     ],
     initial="user",
     auto_transitions=False,
@@ -87,6 +100,20 @@ def callback():
 
 @app.route("/webhook", methods=["POST"])
 def webhook_handler():
+    # test connect to google sheet
+    '''
+    def gsheet(self, stocks):
+        scopes = ["https://spreadsheets.google.com/feeds"]
+ 
+        credentials = ServiceAccountCredentials.from_json_keyfile_name(
+	    "credentials.json", scopes)
+ 
+        client = gspread.authorize(credentials)
+ 
+        sheet = client.open_by_key(
+	        "b86448485f36973bf9e1af9dc6d52291c79338b6").sheet1  #第一個工作表
+    # ---------------
+    '''
     signature = request.headers["X-Line-Signature"]
     notify = 1
     # get request body as text
@@ -118,7 +145,7 @@ def webhook_handler():
             #push_message("for testing")
             notify = 0
         
-
+    
     return "OK"
 
 

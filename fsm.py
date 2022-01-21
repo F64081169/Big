@@ -11,6 +11,9 @@ import schedule
 import time
 from apscheduler.schedulers.background import BlockingScheduler,BackgroundScheduler
 from apscheduler.triggers.date import DateTrigger
+import requests
+from bs4 import BeautifulSoup
+from random import randrange
 
 from utils import send_showAll, send_text_message,send_showAll,job_that_executes_once
 user_id = "U227736503c290a9f5fbe50b3423d5df2"
@@ -20,6 +23,7 @@ expireyear = []
 expiremonth = []
 expireday = []
 oneday = []
+null=["NULL"]
 class TocMachine(GraphMachine):
     
     date = []
@@ -50,8 +54,11 @@ class TocMachine(GraphMachine):
     def is_going_to_showAll(self, event):
         text = event.message.text
         return text.lower() == "查看冰箱"
-
-
+    #推薦食譜
+    def is_going_to_recommand(self, event):
+        text = event.message.text
+        return text.lower() == "推薦食譜"
+ 
     #輸入食材流程
     def on_enter_enterFood(self, event):
         print("I'm entering state1")
@@ -99,19 +106,49 @@ class TocMachine(GraphMachine):
      
 
 
-
+  
     def on_enter_showAll(self, event):
         print("I'm entering state2")
         
         reply_token = event.reply_token
-        text = ""
+        text = "目前冰箱已有食材：\n"
         for i in range (0,TocMachine.count):
-            text = text + TocMachine.foodtype[i]+"\t"+TocMachine.date[i]+"\n"
+            if TocMachine.foodtype[i]!=null[0]:
+                text = text + TocMachine.foodtype[i]+"\t"+TocMachine.date[i]+"\n"
         send_showAll(reply_token,text)
-        
         self.go_back()
 
     def on_exit_showAll(self):
+        print("Leaving state2")
+#推薦食譜
+    def on_enter_recommand(self, event):
+        print("I'm entering state2")
+       
+        reply_token = event.reply_token
+        
+        if TocMachine.count >1:
+            cnt = TocMachine.count-1
+            key=TocMachine.foodtype[randrange(cnt)]
+            key2=TocMachine.foodtype[randrange(cnt)]
+            while( key=="NULL"):
+                key = TocMachine.foodtype[randrange(cnt)]
+
+            while( key2=="NULL"):
+                key2 = TocMachine.foodtype[randrange(cnt)]
+
+            r = requests.get('https://www.google.com/search?q='+key+'%20'+key2+'%20食譜')
+            soup = BeautifulSoup(r.text, 'lxml')
+            a_tag = soup.select_one('div.kCrYT a')
+            href = a_tag['href']
+            googleUrl = 'https://www.google.com'
+            text = googleUrl + href
+        else:
+            text = "食材不足無法推薦食譜，至少要兩樣以上喔！"
+        send_text_message(reply_token,text)
+         
+        self.go_back()
+
+    def on_exit_recommand(self):
         print("Leaving state2")
 
     # delete
@@ -133,16 +170,25 @@ class TocMachine(GraphMachine):
         print("I'm entering state1")
         #TocMachine.foodtype.append(event.message.text)
         length = len(TocMachine.foodtype)
+        flag = 0
         for i in range(0,length):
             if event.message.text == TocMachine.foodtype[i]:
-                TocMachine.foodtype[i] = ""
-                TocMachine.date[i] = ""
+                TocMachine.foodtype.pop(i)
+                TocMachine.date.pop(i)
+                TocMachine.count = TocMachine.count-1
+                flag = 1
+                #TocMachine.foodtype[i] = "NULL"
+                #TocMachine.date[i] = "NULL"
                 #TocMachine.num[i] = ""
                 break
         
-
+        if flag == 0:
+            text = "刪除失敗，冰箱沒有欲刪除的食材"
+        else:
+            text = "刪除成功！"
         reply_token = event.reply_token 
-        send_text_message(reply_token, "刪除成功！")
+        send_text_message(reply_token, text)
+        self.go_back()
 
     def on_exit_delete(self): 
         print("Leaving state2")

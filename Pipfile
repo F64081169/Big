@@ -17,6 +17,9 @@ datetime = "*"
 python-dateutil = "*"
 schedule = "*"
 apscheduler = "*"
+bs4 = "*"
+beautifulsoup4 = "*"
+lxml = "*"
 
 [requires]
 python_version = "3.6"
