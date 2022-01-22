@@ -60,6 +60,14 @@ class TocMachine(GraphMachine):
         text = event.message.text
         return True
 
+    def is_going_to_info(self, event):
+        text = event.message.text
+        return text.lower() == "使用說明"
+
+    def is_going_to_new(self, event):
+        text = event.message.text
+        return text.lower() == "新增冰箱"
+  
     #other
     def is_going_to_showAll(self, event):
         text = event.message.text
@@ -80,8 +88,7 @@ class TocMachine(GraphMachine):
         reply_token = event.reply_token
         send_text_message(reply_token, "請輸入菜名我們將會儲存至資料庫")
         
-    
-    #輸入日期 
+     
     #輸入日期 
     def on_enter_enterDate(self, event):
         print("I'm entering state1")
@@ -151,6 +158,57 @@ class TocMachine(GraphMachine):
 
     def on_exit_showAll(self):
         print("Leaving state2")
+
+    def on_enter_info(self, event):
+        print("I'm entering state2")
+        
+        reply_token = event.reply_token
+        message = [
+                TextSendMessage(
+                text =  '''
+使用說明：
+        '''
+            ),
+            TemplateSendMessage(
+                            alt_text='Buttons template',
+                            template=ButtonsTemplate(
+                                title='新增冰箱!!!',
+                                text='如第一次使用，請按下[新增冰箱]按鈕初始化冰箱，可避免不必要的錯誤！',
+                                actions=[
+                                    MessageTemplateAction(
+                                        label='新增冰箱',
+                                        text='新增冰箱'
+                                    )
+                                ]
+                            )
+                        )
+
+        ]
+       
+        line_bot_api = LineBotApi(channel_access_token)
+        line_bot_api.reply_message(reply_token, message)
+        self.go_back()
+
+    def on_exit_info(self):
+        print("Leaving state2")
+
+    def on_enter_new(self, event):
+        print("I'm entering state2")
+        TocMachine.foodtype.clear()
+        TocMachine.count = 0
+        TocMachine.date.clear()
+        TocMachine.name.clear()
+        TocMachine.num.clear()
+        reply_token = event.reply_token
+        text = '''
+冰箱初始化完成！
+        '''
+        send_text_message(reply_token, text)
+        self.go_back()
+
+    def on_exit_new(self):
+        print("Leaving state2")
+
 #推薦食譜
     def on_enter_ask(self, event):
         print("I'm entering state2")
