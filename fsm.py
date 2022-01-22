@@ -165,7 +165,7 @@ class TocMachine(GraphMachine):
         text = "這是您冰箱內的資料：\n"
         for i in range (0,TocMachine.count):
             if TocMachine.foodtype[i]!=null[0]:
-                text = text + TocMachine.name[i]+":"+TocMachine.foodtype[i]+"\t"+TocMachine.date[i]+"\t" + "數量："+str(TocMachine.num[i]) + "\n"
+                text = text + TocMachine.foodtype[i]+"\t"+TocMachine.date[i]+"\t" + "數量:"+str(TocMachine.num[i]) +"\t"+TocMachine.name[i]+ "\n"
         send_showAll(reply_token,text)
         self.go_back()
 
