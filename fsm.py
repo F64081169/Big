@@ -67,7 +67,7 @@ class TocMachine(GraphMachine):
     #推薦食譜
     def is_going_to_ask(self, event):
         text = event.message.text
-        return text.lower() == "推薦食譜"
+        return text.lower() == "推薦食譜1"
 
     def is_going_to_recommand(self, event):
         text = event.message.text
