@@ -1,4 +1,5 @@
 #from asyncio.windows_events import NULL
+from asyncio import events
 import os
 import sys
 from itertools import count
@@ -81,6 +82,7 @@ class TocMachine(GraphMachine):
         
     
     #輸入日期 
+    #輸入日期 
     def on_enter_enterDate(self, event):
         print("I'm entering state1")
         TocMachine.foodtype.append(event.message.text)
@@ -90,13 +92,15 @@ class TocMachine(GraphMachine):
 
     #輸入數量
     def on_enter_enternum(self, event):
-        print("I'm entering state1")
+        print("I'm entering num")
+        
         TocMachine.date.append(event.message.text)
         reply_token = event.reply_token
         send_text_message(reply_token, "已收到菜名，請輸入數量 "+TocMachine.foodtype[TocMachine.count])
          
     def on_enter_name(self, event):
         print("I'm entering state1")
+
         TocMachine.num.append(int(event.message.text))
         reply_token = event.reply_token
         send_text_message(reply_token, "已收到菜名，請輸入名字"+TocMachine.foodtype[TocMachine.count])
@@ -105,6 +109,7 @@ class TocMachine(GraphMachine):
     #確認
     def on_enter_comfirm(self, event):
         print("I'm entering state1")
+        
         TocMachine.name.append(event.message.text)
         #expire = event.message.text
         length = len(TocMachine.date)
