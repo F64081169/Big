@@ -379,7 +379,7 @@ class TocMachine(GraphMachine):
                                     
                                 ]
                             )
-                        )
+                        ) 
         line_bot_api = LineBotApi(channel_access_token)
         line_bot_api.reply_message(reply_token, message)
         
@@ -418,27 +418,29 @@ class TocMachine(GraphMachine):
                 address_1 = "BCDEFGHIJKLMNOPQRSTUVWXTZ"
                 wks = sht.worksheet_by_title("蛋奶素")
  
-            count = 0
+            countt = 0
             column = 0
             while column < len(address_1):
                 ingredient = wks.cell(address_1[column] + "1")
                 if ingredient.value == in_refrigerator:
-                    count += 1
+                    countt = countt + 1
                     ingredient_1 = address_1[column]
                     break
-                column += 1
+                column = column +  1
 
-            #找到食材對應的菜們
-            str_1 = wks.cell(ingredient_1 + "2")
-            foods_1 = str_1.value.split()
-  
+            
+   
             #印菜名
-            if count != 0:
+            if countt > 0:
+                #找到食材對應的菜們
+                str_1 = wks.cell(ingredient_1 + "2")
+                foods_1 = str_1.value.split()
                 food_to_eat = wks.cell("A" + foods_1[0])
                 print(food_to_eat.value)
                 text = food_to_eat.value
                 
             else:
+                print("不好意思，資料庫無法找到適合的食譜推薦給你")
                 text ="不好意思，資料庫無法找到適合的食譜推薦給你"
         else:
             text = "食材不足無法推薦食譜，至少要兩樣以上喔！"
