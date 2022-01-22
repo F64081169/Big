@@ -245,6 +245,10 @@ class TocMachine(GraphMachine):
                                 text='請問你的飲食偏好',
                                 actions=[
                                     MessageTemplateAction(
+                                        label='葷',
+                                        text='葷'
+                                    ),
+                                    MessageTemplateAction(
                                         label='全素',
                                         text='全素'
                                     ),
@@ -252,10 +256,7 @@ class TocMachine(GraphMachine):
                                         label='蛋奶素',
                                         text='蛋奶素'
                                     ),
-                                    MessageTemplateAction(
-                                        label='其他',
-                                        text='其他'
-                                    ),
+                                    
                                 ]
                             )
                         )
@@ -364,6 +365,10 @@ class TocMachine(GraphMachine):
                                 text='請問你的飲食偏好',
                                 actions=[
                                     MessageTemplateAction(
+                                        label='葷',
+                                        text='葷'
+                                    ),
+                                    MessageTemplateAction(
                                         label='全素',
                                         text='全素'
                                     ),
@@ -371,10 +376,7 @@ class TocMachine(GraphMachine):
                                         label='蛋奶素',
                                         text='蛋奶素'
                                     ),
-                                    MessageTemplateAction(
-                                        label='其他',
-                                        text='其他'
-                                    ),
+                                    
                                 ]
                             )
                         )
@@ -388,13 +390,13 @@ class TocMachine(GraphMachine):
         reply_token = event.reply_token
         
         
-        if TocMachine.count >-1:
-            # cnt = TocMachine.count-1
-            # key=TocMachine.foodtype[randrange(cnt)]
+        if TocMachine.count >1:
+            cnt = TocMachine.count-1
+            key=TocMachine.foodtype[randrange(cnt)]
             # key2=TocMachine.foodtype[randrange(cnt)]
-            type = event.message.text
-            # while( key=="NULL"):
-            #     key = TocMachine.foodtype[randrange(cnt)]
+            
+            while( key=="NULL"):
+                key = TocMachine.foodtype[randrange(cnt)]
 
             # while( key2=="NULL"):
             #     key2 = TocMachine.foodtype[randrange(cnt)]
@@ -402,54 +404,41 @@ class TocMachine(GraphMachine):
             sht = gc.open_by_url('https://docs.google.com/spreadsheets/d/1H9l7S_ntbmJN7oBg8oruc_9CSY0bfzJzUPtaiEA2T3c/')
             wks_list = sht.worksheets()
             flag = 0
-            wks = sht.worksheet_by_title("葷")
-            address_1 = "CDEFGHIJKLMNOPQRSTUV"
+            wks = null
+            address_1 = null
             #in_refrigerator=(key,key2)
-            in_refrigerator=("牛肉","高麗菜")
-            if type == "其他":
+            in_refrigerator=key
+            if event.message.text == "葷":
                 address_1 = "CDEFGHIJKLMNOPQRSTUV"
                 wks = sht.worksheet_by_title("葷")
-            elif type == "全素":
+            elif event.message.text == "全素":
                 address_1 = "BCDEFGHIJKLMNOPQ"
                 wks = sht.worksheet_by_title("全素")
-            elif type == "蛋奶素":
+            elif event.message.text == "蛋奶素":
                 address_1 = "BCDEFGHIJKLMNOPQRSTUVWXTZ"
                 wks = sht.worksheet_by_title("蛋奶素")
  
             count = 0
             column = 0
             while column < len(address_1):
-                in_refri = 0
-                while in_refri < 2:
-                    ingredient = wks.cell(address_1[column] + "1")
-                    if ingredient.value == in_refrigerator[in_refri]:
-                        count += 1
-                        if count == 1:
-                            ingredient_1 = address_1[column]
-                            break
-                        elif count == 2:
-                            ingredient_2 = address_1[column]
-                            break
-                    in_refri += 1
+                ingredient = wks.cell(address_1[column] + "1")
+                if ingredient.value == in_refrigerator:
+                    count += 1
+                    ingredient_1 = address_1[column]
+                    break
                 column += 1
 
             #找到食材對應的菜們
             str_1 = wks.cell(ingredient_1 + "2")
-            str_2 = wks.cell(ingredient_2 + "2")
             foods_1 = str_1.value.split()
-            foods_2 = str_2.value.split()
-
-            #比對
-            index_1 = 0
-            index_2 = 0
-            for index_1 in range(0, len(foods_1)):
-                for index_2 in range(0, len(foods_2)):
-                    if foods_1[index_1] == foods_2[index_2]:
-                        food_to_eat = wks.cell("A" + foods_1[index_1])
-                        print(food_to_eat.value)
-                        text = food_to_eat.value
-                        flag = 1
-            if flag == 0:
+  
+            #印菜名
+            if count != 0:
+                food_to_eat = wks.cell("A" + foods_1[0])
+                print(food_to_eat.value)
+                text = food_to_eat.value
+                
+            else:
                 text ="不好意思，資料庫無法找到適合的食譜推薦給你"
         else:
             text = "食材不足無法推薦食譜，至少要兩樣以上喔！"

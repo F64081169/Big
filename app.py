@@ -152,7 +152,7 @@ def webhook_handler():
         
         response = machine.advance(event)
         if response == False:
-            send_text_message(event.reply_token, "Not Entering any State")
+            send_text_message(event.reply_token, "抱歉我看不懂請重新輸入QQQ")
         if notify == 1:
             #push_message("for testing")
             notify = 0
