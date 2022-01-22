@@ -15,10 +15,12 @@ from apscheduler.triggers.date import DateTrigger
 import requests
 from bs4 import BeautifulSoup
 from random import randrange
+import pygsheets
 
 from utils import send_showAll, send_text_message,send_showAll,job_that_executes_once
 user_id = "U227736503c290a9f5fbe50b3423d5df2"
 channel_access_token = os.getenv("LINE_CHANNEL_ACCESS_TOKEN", None)
+gc = pygsheets.authorize(service_file='deft-manifest-338809-b86448485f36.json')
 
 expireyear = []
 expiremonth = []
@@ -81,13 +83,22 @@ class TocMachine(GraphMachine):
     def is_going_to_recommand(self, event):
         text = event.message.text
         return True
+
+    #推薦食譜2
+    def is_going_to_ask2(self, event):
+        text = event.message.text
+        return text.lower() == "推薦食譜2"
+
+    def is_going_to_recommand2(self, event):
+        text = event.message.text
+        return True
  
     #輸入食材流程
     def on_enter_enterFood(self, event):
         print("I'm entering state1")
 
         reply_token = event.reply_token
-        send_text_message(reply_token, "請輸入菜名我們將會儲存至資料庫")
+        send_text_message(reply_token, "請輸入放入冰箱的菜名")
         
      
     #輸入日期 
@@ -96,7 +107,7 @@ class TocMachine(GraphMachine):
         TocMachine.foodtype.append(event.message.text)
         reply_token = event.reply_token
 
-        send_text_message(reply_token,"已收到菜名，請輸入保存期限，屆時會提醒你 "+TocMachine.foodtype[TocMachine.count])
+        send_text_message(reply_token,"請輸入保存期限，屆時會提醒你\n(輸入時年月日請以空格隔開，共輸入八位數字ex：2022 02 07)")
 
     #輸入數量
     def on_enter_enternum(self, event):
@@ -104,14 +115,14 @@ class TocMachine(GraphMachine):
         
         TocMachine.date.append(event.message.text)
         reply_token = event.reply_token
-        send_text_message(reply_token, "已收到菜名，請輸入數量(請輸入數字忽略單位) "+TocMachine.foodtype[TocMachine.count])
+        send_text_message(reply_token, "請輸入放入冰箱的數量\n(請輸入數字忽略單位ex: 2) ")
          
     def on_enter_name(self, event):
         print("I'm entering state1")
 
         TocMachine.num.append(int(event.message.text))
         reply_token = event.reply_token
-        send_text_message(reply_token, "已收到菜名，請輸入名字"+TocMachine.foodtype[TocMachine.count])
+        send_text_message(reply_token, "請輸入食物擁有者的名字")
          
     
     #確認
@@ -133,7 +144,7 @@ class TocMachine(GraphMachine):
         print(expire.split()[2])
         reply_token = event.reply_token
         #schedule.every(days).day.at("8:30").do(job_that_executes_once("你的"+TocMachine.foodtype[TocMachine.count])+"已到期")
-        send_text_message(reply_token, "已收到日期，跟你確認一下機制:\n"+"人名:"+TocMachine.name[TocMachine.count]+"\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count] + "\n" + str(TocMachine.num[TocMachine.count]))
+        send_text_message(reply_token, "這是您放入冰箱的資料:\n"+"人名:"+TocMachine.name[TocMachine.count]+"\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count] + "\n" + str(TocMachine.num[TocMachine.count]))
         scheduler = BackgroundScheduler()
         intervalTrigger=DateTrigger(run_date=expire.split()[0]+'-'+expire.split()[1]+'-'+expire.split()[2]+ 'T08:00:00+08:00')
         scheduler.add_job(TocMachine.my_job, intervalTrigger, id='my_job_id'+str(TocMachine.count))
@@ -151,7 +162,7 @@ class TocMachine(GraphMachine):
         print("I'm entering state2")
         
         reply_token = event.reply_token
-        text = "目前冰箱已有食材：\n"
+        text = "這是您冰箱內的資料：\n"
         for i in range (0,TocMachine.count):
             if TocMachine.foodtype[i]!=null[0]:
                 text = text + TocMachine.name[i]+":"+TocMachine.foodtype[i]+"\t"+TocMachine.date[i]+"\t" + "數量："+str(TocMachine.num[i]) + "\n"
@@ -171,7 +182,7 @@ class TocMachine(GraphMachine):
 
 "新增冰箱：第一次使用請點選新增冰箱" 
 
-"記錄食材：分別輸菜名、保存期限、數量、人名標籤 保存期限輸入格式範例ex: '2022 02 07'"
+"記錄食材：分別輸菜名、保存期限、數量、人名標籤 保存期限輸入格式範例ex: 2022 02 07"
 
 "刪除食材：分別輸入菜名及數量"
 
@@ -306,7 +317,7 @@ class TocMachine(GraphMachine):
         print("I'm entering state1")
         TocMachine.deleteName= event.message.text
         reply_token = event.reply_token
-        send_text_message(reply_token, "請輸入要刪除的數量(請輸入數字忽略單位)")
+        send_text_message(reply_token, "請輸入要刪除的數量(請輸入數字忽略單位ex: 2)")
 
     def is_going_to＿delete2(self, event):
         text = event.message.text
@@ -341,4 +352,114 @@ class TocMachine(GraphMachine):
         send_text_message(reply_token, text)
         self.go_back()
 
+        #推薦食譜2
+    def on_enter_ask2(self, event):
+        print("I'm entering state2")
+        
+        reply_token = event.reply_token
+        message = TemplateSendMessage(
+                            alt_text='Buttons template',
+                            template=ButtonsTemplate(
+                                title='飲食偏好!!!',
+                                text='請問你的飲食偏好',
+                                actions=[
+                                    MessageTemplateAction(
+                                        label='全素',
+                                        text='全素'
+                                    ),
+                                    MessageTemplateAction(
+                                        label='蛋奶素',
+                                        text='蛋奶素'
+                                    ),
+                                    MessageTemplateAction(
+                                        label='其他',
+                                        text='其他'
+                                    ),
+                                ]
+                            )
+                        )
+        line_bot_api = LineBotApi(channel_access_token)
+        line_bot_api.reply_message(reply_token, message)
+        
+
+    def on_enter_recommand2(self, event):
+        print("I'm entering state2")
+       
+        reply_token = event.reply_token
+        
+        
+        if TocMachine.count >-1:
+            # cnt = TocMachine.count-1
+            # key=TocMachine.foodtype[randrange(cnt)]
+            # key2=TocMachine.foodtype[randrange(cnt)]
+            type = event.message.text
+            # while( key=="NULL"):
+            #     key = TocMachine.foodtype[randrange(cnt)]
+
+            # while( key2=="NULL"):
+            #     key2 = TocMachine.foodtype[randrange(cnt)]
+            
+            sht = gc.open_by_url('https://docs.google.com/spreadsheets/d/1H9l7S_ntbmJN7oBg8oruc_9CSY0bfzJzUPtaiEA2T3c/')
+            wks_list = sht.worksheets()
+            flag = 0
+            wks = sht.worksheet_by_title("葷")
+            address_1 = "CDEFGHIJKLMNOPQRSTUV"
+            #in_refrigerator=(key,key2)
+            in_refrigerator=("牛肉","高麗菜")
+            if type == "其他":
+                address_1 = "CDEFGHIJKLMNOPQRSTUV"
+                wks = sht.worksheet_by_title("葷")
+            elif type == "全素":
+                address_1 = "BCDEFGHIJKLMNOPQ"
+                wks = sht.worksheet_by_title("全素")
+            elif type == "蛋奶素":
+                address_1 = "BCDEFGHIJKLMNOPQRSTUVWXTZ"
+                wks = sht.worksheet_by_title("蛋奶素")
+ 
+            count = 0
+            column = 0
+            while column < len(address_1):
+                in_refri = 0
+                while in_refri < 2:
+                    ingredient = wks.cell(address_1[column] + "1")
+                    if ingredient.value == in_refrigerator[in_refri]:
+                        count += 1
+                        if count == 1:
+                            ingredient_1 = address_1[column]
+                            break
+                        elif count == 2:
+                            ingredient_2 = address_1[column]
+                            break
+                    in_refri += 1
+                column += 1
+
+            #找到食材對應的菜們
+            str_1 = wks.cell(ingredient_1 + "2")
+            str_2 = wks.cell(ingredient_2 + "2")
+            foods_1 = str_1.value.split()
+            foods_2 = str_2.value.split()
+
+            #比對
+            index_1 = 0
+            index_2 = 0
+            for index_1 in range(0, len(foods_1)):
+                for index_2 in range(0, len(foods_2)):
+                    if foods_1[index_1] == foods_2[index_2]:
+                        food_to_eat = wks.cell("A" + foods_1[index_1])
+                        print(food_to_eat.value)
+                        text = food_to_eat.value
+                        flag = 1
+            if flag == 0:
+                text ="不好意思，資料庫無法找到適合的食譜推薦給你"
+        else:
+            text = "食材不足無法推薦食譜，至少要兩樣以上喔！"
+        send_text_message(reply_token,text)
+         
+        self.go_back()
+
+    def on_exit_recommand2(self):
+        print("Leaving state2")
+
+
     
+ 

@@ -28,7 +28,7 @@ load_dotenv()
 
 notify = 1
 machine = TocMachine(
-    states=["user", "enterFood","enterDate","enternum", "comfirm", "showAll","deletedfood", "delete","recommand","name","ask","info","new","delete2"],
+    states=["user", "enterFood","enterDate","enternum", "comfirm", "showAll","deletedfood", "delete","recommand","name","ask","info","new","delete2","recommand2","ask2"],
     transitions=[
         #輸入食材流程
         {"trigger": "advance","source": "user","dest": "enterFood","conditions": "is_going_to_enterFood",},
@@ -50,8 +50,11 @@ machine = TocMachine(
         #推薦食譜一
         {"trigger": "advance","source": "user","dest": "ask","conditions": "is_going_to_ask",},
         {"trigger": "advance","source": "ask","dest": "recommand","conditions": "is_going_to_recommand",},
+        #推薦食譜二
+        {"trigger": "advance","source": "user","dest": "ask2","conditions": "is_going_to_ask2",},
+        {"trigger": "advance","source": "ask2","dest": "recommand2","conditions": "is_going_to_recommand2",},
 
-        {"trigger": "go_back", "source": ["enterFood", "showAll","enterDate","comfirm","delete2","recommand","name","info","new"], "dest": "user"},
+        {"trigger": "go_back", "source": ["enterFood", "showAll","enterDate","comfirm","delete2","recommand","name","info","new","recommand2","ask2"], "dest": "user"},
     ],
     initial="user",
     auto_transitions=False,

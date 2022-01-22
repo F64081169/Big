@@ -20,6 +20,7 @@ apscheduler = "*"
 bs4 = "*"
 beautifulsoup4 = "*"
 lxml = "*"
+pygsheets = "*"
 
 [requires]
 python_version = "3.6"
