@@ -167,8 +167,7 @@ class TocMachine(GraphMachine):
         reply_token = event.reply_token
         message = [
                 TextSendMessage(
-                text =  '''
-使用說明：
+                text =  '''使用說明：
 
 "新增冰箱：第一次使用請點選新增冰箱" 
 
