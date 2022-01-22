@@ -28,13 +28,14 @@ load_dotenv()
 
 notify = 1
 machine = TocMachine(
-    states=["user", "enterFood","enterDate","enternum", "comfirm", "showAll","deletedfood", "delete","recommand"],
+    states=["user", "enterFood","enterDate","enternum", "comfirm", "showAll","deletedfood", "delete","recommand","name"],
     transitions=[
         #輸入食材流程
         {"trigger": "advance","source": "user","dest": "enterFood","conditions": "is_going_to_enterFood",},
         {"trigger": "advance","source": "enterFood","dest": "enterDate","conditions": "is_going_to_enterDate",},
         {"trigger": "advance","source": "enterDate","dest": "enternum","conditions": "is_going_to_enternum",},
-        {"trigger": "advance","source": "enternum","dest": "comfirm","conditions": "is_going_to_comfirm",},
+        {"trigger": "advance","source": "enternum","dest": "name","conditions": "is_going_to_name",},
+        {"trigger": "advance","source": "name","dest": "comfirm","conditions": "is_going_to_comfirm",},
         
         #顯示冰箱的菜
         {"trigger": "advance","source": "user","dest": "showAll","conditions": "is_going_to_showAll",},
@@ -44,7 +45,7 @@ machine = TocMachine(
         #推薦食譜一
         {"trigger": "advance","source": "user","dest": "recommand","conditions": "is_going_to_recommand",},
 
-        {"trigger": "go_back", "source": ["enterFood", "showAll","enterDate","comfirm","delete","recommand"], "dest": "user"},
+        {"trigger": "go_back", "source": ["enterFood", "showAll","enterDate","comfirm","delete","recommand","name"], "dest": "user"},
     ],
     initial="user",
     auto_transitions=False,

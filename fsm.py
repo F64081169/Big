@@ -3,7 +3,7 @@ import os
 import sys
 from itertools import count
 from transitions.extensions import GraphMachine
-from linebot.models import MessageEvent, TextMessage, TextSendMessage
+from linebot.models import *#MessageEvent, TextMessage, TextSendMessage
 from linebot import LineBotApi, WebhookParser
 import datetime
 from dateutil import rrule
@@ -29,6 +29,7 @@ class TocMachine(GraphMachine):
     date = []
     foodtype = []
     num = []
+    name = []
     count = 0
     def __init__(self, **machine_configs):
         self.machine = GraphMachine(model=self, **machine_configs)
@@ -47,6 +48,10 @@ class TocMachine(GraphMachine):
         return True
     
     def is_going_to_enternum(self, event):
+        text = event.message.text
+        return True
+
+    def is_going_to_name(self, event):
         text = event.message.text
         return True
 
@@ -71,25 +76,32 @@ class TocMachine(GraphMachine):
         send_text_message(reply_token, "請輸入菜名我們將會儲存至資料庫")
         
     
-    #輸入日期
+    #輸入日期 
     def on_enter_enterDate(self, event):
         print("I'm entering state1")
         TocMachine.foodtype.append(event.message.text)
         reply_token = event.reply_token
-        send_text_message(reply_token, "已收到菜名，請輸入保存期限，屆時會提醒你 "+TocMachine.foodtype[TocMachine.count])
+
+        send_text_message(reply_token,"已收到菜名，請輸入保存期限，屆時會提醒你 "+TocMachine.foodtype[TocMachine.count])
 
     #輸入數量
     def on_enter_enternum(self, event):
         print("I'm entering state1")
         TocMachine.date.append(event.message.text)
         reply_token = event.reply_token
-        send_text_message(reply_token, "已收到菜名，請輸入數量，屆時會提醒你 "+TocMachine.foodtype[TocMachine.count])
-        
+        send_text_message(reply_token, "已收到菜名，請輸入數量 "+TocMachine.foodtype[TocMachine.count])
+         
+    def on_enter_name(self, event):
+        print("I'm entering state1")
+        TocMachine.num.append(int(event.message.text))
+        reply_token = event.reply_token
+        send_text_message(reply_token, "已收到菜名，請輸入名字"+TocMachine.foodtype[TocMachine.count])
+         
     
     #確認
     def on_enter_comfirm(self, event):
         print("I'm entering state1")
-        TocMachine.num.append(int(event.message.text))
+        TocMachine.name.append(event.message.text)
         #expire = event.message.text
         length = len(TocMachine.date)
         expire = TocMachine.date[length - 1]
@@ -103,11 +115,8 @@ class TocMachine(GraphMachine):
         print(expire.split()[1])
         print(expire.split()[2])
         reply_token = event.reply_token
-        #oneday.append(datetime.date(int(expire.split()[0]),int(expire.split()[1]),int(expire.split()[2])))
-         
-        #days = rrule.rrule(rrule.DAILY, dtstart=today, until=oneday).count()
         #schedule.every(days).day.at("8:30").do(job_that_executes_once("你的"+TocMachine.foodtype[TocMachine.count])+"已到期")
-        send_text_message(reply_token, "已收到日期，跟你確認一下機制:\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count] + "\n" + str(TocMachine.num[TocMachine.count]))
+        send_text_message(reply_token, "已收到日期，跟你確認一下機制:\n"+"人名:"+TocMachine.name[TocMachine.count]+"\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count] + "\n" + str(TocMachine.num[TocMachine.count]))
         scheduler = BackgroundScheduler()
         intervalTrigger=DateTrigger(run_date=expire.split()[0]+'-'+expire.split()[1]+'-'+expire.split()[2]+ 'T08:00:00+08:00')
         scheduler.add_job(TocMachine.my_job, intervalTrigger, id='my_job_id'+str(TocMachine.count))
@@ -127,7 +136,7 @@ class TocMachine(GraphMachine):
         text = "目前冰箱已有食材：\n"
         for i in range (0,TocMachine.count):
             if TocMachine.foodtype[i]!=null[0]:
-                text = text + TocMachine.foodtype[i]+"\t"+TocMachine.date[i]+"\t" + "數量："+str(TocMachine.num[i]) + "\n"
+                text = text + TocMachine.name[i]+":"+TocMachine.foodtype[i]+"\t"+TocMachine.date[i]+"\t" + "數量："+str(TocMachine.num[i]) + "\n"
         send_showAll(reply_token,text)
         self.go_back()
 
@@ -191,11 +200,9 @@ class TocMachine(GraphMachine):
                 TocMachine.foodtype.pop(i)
                 TocMachine.date.pop(i)
                 TocMachine.num.pop(i)
+                TocMachine.name.pop(i)
                 TocMachine.count = TocMachine.count-1
                 flag = 1
-                #TocMachine.foodtype[i] = "NULL"
-                #TocMachine.date[i] = "NULL" 
-                #TocMachine.num[i] = ""
                 break
             elif foodtype == TocMachine.foodtype[i] and int(foodsnum) < TocMachine.num[i]:
                 TocMachine.num[i] = TocMachine.num[i] - int(foodsnum)
