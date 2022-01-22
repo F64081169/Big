@@ -26,7 +26,8 @@ expireday = []
 oneday = []
 null=["NULL"]
 class TocMachine(GraphMachine):
-    
+    deleteName = ""
+    deleteNum = 0
     date = []
     foodtype = []
     num = []
@@ -103,7 +104,7 @@ class TocMachine(GraphMachine):
         
         TocMachine.date.append(event.message.text)
         reply_token = event.reply_token
-        send_text_message(reply_token, "已收到菜名，請輸入數量 "+TocMachine.foodtype[TocMachine.count])
+        send_text_message(reply_token, "已收到菜名，請輸入數量(請輸入數字忽略單位) "+TocMachine.foodtype[TocMachine.count])
          
     def on_enter_name(self, event):
         print("I'm entering state1")
@@ -137,6 +138,7 @@ class TocMachine(GraphMachine):
         intervalTrigger=DateTrigger(run_date=expire.split()[0]+'-'+expire.split()[1]+'-'+expire.split()[2]+ 'T08:00:00+08:00')
         scheduler.add_job(TocMachine.my_job, intervalTrigger, id='my_job_id'+str(TocMachine.count))
         scheduler.start()
+
         
         
         TocMachine.count+=1
@@ -284,21 +286,29 @@ class TocMachine(GraphMachine):
         print("I'm entering state1")
 
         reply_token = event.reply_token
-        send_text_message(reply_token, "請輸入要刪除的菜名及數量")
+        send_text_message(reply_token, "請輸入要刪除的菜名")
 
     def is_going_to＿delete(self, event):
         text = event.message.text
         return True
-
     def on_enter_delete(self, event):
         print("I'm entering state1")
+        TocMachine.deleteName= event.message.text
+        reply_token = event.reply_token
+        send_text_message(reply_token, "請輸入要刪除的數量(請輸入數字忽略單位)")
+
+    def is_going_to＿delete2(self, event):
+        text = event.message.text
+        return True
+
+    def on_enter_delete2(self, event):
+        print("I'm entering state1")
         #TocMachine.foodtype.append(event.message.text)
-        foodtype = event.message.text.split()[0] 
-        foodsnum = event.message.text.split()[1]
+        TocMachine.deleteNum= int(event.message.text)
         length = len(TocMachine.foodtype)
         flag = 0
         for i in range(0,length):
-            if foodtype == TocMachine.foodtype[i] and int(foodsnum) == TocMachine.num[i]:
+            if TocMachine.deleteName == TocMachine.foodtype[i] and TocMachine.deleteNum == TocMachine.num[i]:
                 TocMachine.foodtype.pop(i)
                 TocMachine.date.pop(i)
                 TocMachine.num.pop(i)
@@ -306,8 +316,8 @@ class TocMachine(GraphMachine):
                 TocMachine.count = TocMachine.count-1
                 flag = 1
                 break
-            elif foodtype == TocMachine.foodtype[i] and int(foodsnum) < TocMachine.num[i]:
-                TocMachine.num[i] = TocMachine.num[i] - int(foodsnum)
+            elif TocMachine.deleteName == TocMachine.foodtype[i] and TocMachine.deleteNum < TocMachine.num[i]:
+                TocMachine.num[i] = TocMachine.num[i] - TocMachine.deleteNum
                 flag = 1
             else:
                 flag = 0
@@ -320,6 +330,4 @@ class TocMachine(GraphMachine):
         send_text_message(reply_token, text)
         self.go_back()
 
-    def on_exit_delete(self): 
-        print("Leaving state2")
-
+    
