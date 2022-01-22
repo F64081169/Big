@@ -64,9 +64,13 @@ class TocMachine(GraphMachine):
         text = event.message.text
         return text.lower() == "查看冰箱"
     #推薦食譜
-    def is_going_to_recommand(self, event):
+    def is_going_to_ask(self, event):
         text = event.message.text
         return text.lower() == "推薦食譜"
+
+    def is_going_to_recommand(self, event):
+        text = event.message.text
+        return True
  
     #輸入食材流程
     def on_enter_enterFood(self, event):
@@ -143,10 +147,40 @@ class TocMachine(GraphMachine):
     def on_exit_showAll(self):
         print("Leaving state2")
 #推薦食譜
+    def on_enter_ask(self, event):
+        print("I'm entering state2")
+        
+        reply_token = event.reply_token
+        message = TemplateSendMessage(
+                            alt_text='Buttons template',
+                            template=ButtonsTemplate(
+                                title='飲食偏好!!!',
+                                text='請問你的飲食偏好',
+                                actions=[
+                                    MessageTemplateAction(
+                                        label='全素',
+                                        text='全素'
+                                    ),
+                                    MessageTemplateAction(
+                                        label='蛋奶素',
+                                        text='蛋奶素'
+                                    ),
+                                    MessageTemplateAction(
+                                        label='其他',
+                                        text='其他'
+                                    ),
+                                ]
+                            )
+                        )
+        line_bot_api = LineBotApi(channel_access_token)
+        line_bot_api.reply_message(reply_token, message)
+        
+
     def on_enter_recommand(self, event):
         print("I'm entering state2")
        
         reply_token = event.reply_token
+        
         
         if TocMachine.count >1:
             cnt = TocMachine.count-1
@@ -157,7 +191,12 @@ class TocMachine(GraphMachine):
 
             while( key2=="NULL"):
                 key2 = TocMachine.foodtype[randrange(cnt)]
-
+            if event.message.text=="全素":
+                key = "全素"
+            elif event.message.text=="蛋奶素":
+                key = "蛋奶素"
+            else:
+                key = key
             r = requests.get('https://www.google.com/search?q='+key+'%20'+key2+'%20食譜')
             soup = BeautifulSoup(r.text, 'lxml')
             a_tag = soup.select_one('div.kCrYT a')
