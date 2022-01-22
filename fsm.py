@@ -173,7 +173,7 @@ class TocMachine(GraphMachine):
                             alt_text='Buttons template',
                             template=ButtonsTemplate(
                                 title='新增冰箱!!!',
-                                text='如第一次使用，請按下[新增冰箱]按鈕初始化冰箱，可避免不必要的錯誤！',
+                                text='若你是第一次使用，請按下[新增冰箱]按鈕初始化冰箱，可避免不必要的錯誤！',
                                 actions=[
                                     MessageTemplateAction(
                                         label='新增冰箱',
