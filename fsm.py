@@ -358,7 +358,18 @@ class TocMachine(GraphMachine):
         print("I'm entering state2")
         
         reply_token = event.reply_token
-        message = TemplateSendMessage(
+        message = [
+             TextSendMessage(  #顯示地址
+            text = '''
+推薦食譜2搜尋食譜的方式
+與推薦食譜1(爬蟲)不同
+是在自己建的資料庫上搜尋食譜
+故搜尋時間會10秒到60秒不等，
+且極有可能會搜尋不到食譜，
+請見諒><
+            '''
+        ),
+        TemplateSendMessage(
                             alt_text='Buttons template',
                             template=ButtonsTemplate(
                                 title='飲食偏好!!!',
@@ -380,6 +391,7 @@ class TocMachine(GraphMachine):
                                 ]
                             )
                         ) 
+        ]
         line_bot_api = LineBotApi(channel_access_token)
         line_bot_api.reply_message(reply_token, message)
         
