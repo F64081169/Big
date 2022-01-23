@@ -1,5 +1,6 @@
 #from asyncio.windows_events import NULL
 from asyncio import events
+from email import message
 import os
 import sys
 from itertools import count
@@ -41,7 +42,7 @@ class TocMachine(GraphMachine):
         line_bot_api = LineBotApi(channel_access_token)
         line_bot_api.push_message(user_id, TextSendMessage(text=TocMachine.foodtype[count]+'到期了！'))
         print('到期了')
-        
+         
     #輸入食材流程
     def is_going_to_enterFood(self, event):
         text = event.message.text
@@ -58,7 +59,7 @@ class TocMachine(GraphMachine):
     def is_going_to_name(self, event):
         text = event.message.text
         return True
-
+ 
     def is_going_to_comfirm(self, event):
         text = event.message.text
         return True
@@ -98,7 +99,7 @@ class TocMachine(GraphMachine):
         print("I'm entering state1")
 
         reply_token = event.reply_token
-        send_text_message(reply_token, "請輸入放入冰箱的菜名")
+        send_text_message(reply_token, "請輸入放入冰箱的菜名🥬")
         
      
     #輸入日期 
@@ -106,8 +107,8 @@ class TocMachine(GraphMachine):
         print("I'm entering state1")
         TocMachine.foodtype.append(event.message.text)
         reply_token = event.reply_token
-
-        send_text_message(reply_token,"請輸入保存期限，屆時會提醒你\n(輸入時年月日請以空格隔開，共輸入八位數字ex：2022 02 07)")
+ 
+        send_text_message(reply_token,"請輸入保存期限\n⚠️年月日請以空格隔開「2022 02 07」共八位數")
 
     #輸入數量
     def on_enter_enternum(self, event):
@@ -115,7 +116,7 @@ class TocMachine(GraphMachine):
         
         TocMachine.date.append(event.message.text)
         reply_token = event.reply_token
-        send_text_message(reply_token, "請輸入放入冰箱的數量\n(請輸入數字忽略單位ex: 2) ")
+        send_text_message(reply_token, "請輸入放入冰箱的數量\n⚠️數字無需加單位 ex：2")
          
     def on_enter_name(self, event):
         print("I'm entering state1")
@@ -144,14 +145,14 @@ class TocMachine(GraphMachine):
         print(expire.split()[2])
         reply_token = event.reply_token
         #schedule.every(days).day.at("8:30").do(job_that_executes_once("你的"+TocMachine.foodtype[TocMachine.count])+"已到期")
-        send_text_message(reply_token, "這是您放入冰箱的資料:\n"+"人名:"+TocMachine.name[TocMachine.count]+"\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count] + "\n" + str(TocMachine.num[TocMachine.count]))
+        send_text_message(reply_token, "📁這是您放入冰箱的資料：\n人名："+TocMachine.name[TocMachine.count]+"\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count] + "\n" + str(TocMachine.num[TocMachine.count])+"\n\n⚠️食譜推薦一定要輸入至少兩項食材，即可點選「推薦食譜」\n⚠️欲新增食材務必先點選「開始記錄」\n🐤可點選「查看冰箱」檢視冰箱現有食材呦！")
         scheduler = BackgroundScheduler()
         intervalTrigger=DateTrigger(run_date=expire.split()[0]+'-'+expire.split()[1]+'-'+expire.split()[2]+ 'T08:00:00+08:00')
         scheduler.add_job(TocMachine.my_job, intervalTrigger, id='my_job_id'+str(TocMachine.count))
         scheduler.start()
-
-        
-        
+ 
+         
+         
         TocMachine.count+=1
         self.go_back()
      
@@ -178,26 +179,27 @@ class TocMachine(GraphMachine):
         reply_token = event.reply_token
         message = [
                 TextSendMessage(
-                text =  '''使用說明：
+                text =  '''📖使用說明：
 
-"新增冰箱：第一次使用請點選新增冰箱" 
+🐤新增冰箱：第一次使用請點選新增冰箱
 
-"記錄食材：分別輸菜名、保存期限、數量、人名標籤 保存期限輸入格式範例ex: 2022 02 07"
+🐤記錄食材：
+Step1：輸入蔬菜名
+Step2 ：輸入保存期限 
+    ⚠️年月日之間需要空格 2022 02 07 
+Step3 ：數量
+Step4 ：人名標籤 
 
-"刪除食材：分別輸入菜名及數量"
+🐤刪除食材：分別輸入菜名及數量即可刪除
 
-"食品到期通知：食品到期當日上午八點會跳出提醒通知"
+🐤食品到期通知：食品到期當日上午八點會跳出提醒通知
 
-"食譜推薦1、食譜推薦2：點擊將會根據冰箱內有的兩樣食材推薦食譜"
+🐤食譜推薦1、食譜推薦2：點擊將會根據冰箱內有的兩樣食材推薦食譜
 
-"查看冰箱：點擊將會顯示冰箱內的食材、數量、保存期限、人名"
+🐤查看冰箱：點擊將會顯示冰箱內的食材、數量、保存期限、人名
 
-(推薦食譜2搜尋食譜的方式
-與推薦食譜1(爬蟲)不同
-是在自己建的資料庫上搜尋食譜
-故搜尋時間會10秒到60秒不等，
-且極有可能會搜尋不到食譜，
-請見諒><)
+🐤小提醒： 
+推薦食譜2的搜尋時間為10秒-60秒不等，請耐心等待哦！
         '''
             ),
             TemplateSendMessage(
@@ -233,6 +235,7 @@ class TocMachine(GraphMachine):
         reply_token = event.reply_token
         text = '''
 冰箱初始化完成！
+請點選下方選單「開始記錄」✏️
         '''
         send_text_message(reply_token, text)
         self.go_back()
@@ -326,7 +329,7 @@ class TocMachine(GraphMachine):
         TocMachine.deleteName= event.message.text
         reply_token = event.reply_token
         send_text_message(reply_token, "請輸入要刪除的數量(請輸入數字忽略單位ex: 2)")
-
+  
     def is_going_to＿delete2(self, event):
         text = event.message.text
         return True
@@ -344,18 +347,21 @@ class TocMachine(GraphMachine):
                 TocMachine.num.pop(i)
                 TocMachine.name.pop(i)
                 TocMachine.count = TocMachine.count-1
-                flag = 1
+                text = "刪除成功！"
                 break
+             
             elif TocMachine.deleteName == TocMachine.foodtype[i] and TocMachine.deleteNum < TocMachine.num[i]:
                 TocMachine.num[i] = TocMachine.num[i] - TocMachine.deleteNum
-                flag = 1
+                text = "刪除成功！"
+                break
+            elif TocMachine.deleteName == TocMachine.foodtype[i] and TocMachine.deleteNum > TocMachine.num[i]:
+                text = "刪除失敗，"+TocMachine.foodtype[i]+"剩餘的數量少於欲刪除的數量"
+                break
+                
             else:
-                flag = 0
+                text = "刪除失敗，冰箱沒有欲刪除的食材"
         
-        if flag == 0:
-            text = "刪除失敗，冰箱沒有欲刪除的食材"
-        else:
-            text = "刪除成功！"
+       
         reply_token = event.reply_token 
         send_text_message(reply_token, text)
         self.go_back()
@@ -368,13 +374,11 @@ class TocMachine(GraphMachine):
         message = [
              TextSendMessage(  #顯示地址
             text = '''
-推薦食譜2搜尋食譜的方式
-與推薦食譜1(爬蟲)不同
-是在自己建的資料庫上搜尋食譜
-故搜尋時間會10秒到60秒不等，
-且極有可能會搜尋不到食譜，
-請見諒><
-            '''
+🔎推薦食譜2的搜尋方式，
+是在自己建的資料庫上搜尋，
+故搜尋時間為10-60秒不等，
+請耐心等待呦！
+            ''' 
         ),
         TemplateSendMessage(
                             alt_text='Buttons template',

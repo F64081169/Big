@@ -1,5 +1,6 @@
 import os
 import sys
+from urllib import response
 
 from flask import Flask, jsonify, request, abort, send_file
 from dotenv import load_dotenv
@@ -8,6 +9,7 @@ from linebot.exceptions import InvalidSignatureError
 from linebot.models import MessageEvent, TextMessage, TextSendMessage
 from apscheduler.schedulers.background import BlockingScheduler
 from apscheduler.triggers.date import DateTrigger
+from random import randrange
 
 # 連結google sheet
 #import gspread
@@ -20,6 +22,7 @@ from oauth2client.service_account import ServiceAccountCredentials as SAC
 '''
 #--------
 
+reply = ("抱歉我看不懂請重新輸入QQQ","嗨！我的名字叫管理🐔\n請重新輸入關鍵字","好好講話喔😡咕咕咕","八寶丸好好吃！！！\n請重新輸入關鍵字","嗚嗚拉拉","我好餓！咕咕嘎嘎","狗狗ㄍㄝ？","嘰哩雞裡？","氣噗噗","?","??!!")
 from fsm import TocMachine
 from utils import send_text_message
 import schedule
@@ -109,7 +112,7 @@ def callback():
 
     return "OK"
 
-
+  
 @app.route("/webhook", methods=["POST"])
 def webhook_handler():
     # test connect to google sheet
@@ -152,7 +155,7 @@ def webhook_handler():
         
         response = machine.advance(event)
         if response == False:
-            send_text_message(event.reply_token, "抱歉我看不懂請重新輸入QQQ")
+            send_text_message(event.reply_token, reply[randrange(11)])
         if notify == 1:
             #push_message("for testing")
             notify = 0
