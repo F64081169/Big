@@ -35,12 +35,13 @@ class TocMachine(GraphMachine):
     foodtype = []
     num = []
     name = []
-    count = 0
+    count = 0 
     def __init__(self, **machine_configs):
         self.machine = GraphMachine(model=self, **machine_configs)
     def my_job():
         line_bot_api = LineBotApi(channel_access_token)
-        line_bot_api.push_message(user_id, TextSendMessage(text=TocMachine.foodtype[count]+'到期了！'))
+        #profile = line_bot_api.get_profile('<user_id>')
+        line_bot_api.push_message(user_id, TextSendMessage(text=TocMachine.name[TocMachine.count-1]+"的"+TocMachine.foodtype[TocMachine.count-1]+'到期了！'))
         print('到期了')
          
     #輸入食材流程
@@ -147,9 +148,9 @@ class TocMachine(GraphMachine):
         #schedule.every(days).day.at("8:30").do(job_that_executes_once("你的"+TocMachine.foodtype[TocMachine.count])+"已到期")
         send_text_message(reply_token, "📁這是您放入冰箱的資料：\n人名："+TocMachine.name[TocMachine.count]+"\n"+TocMachine.foodtype[TocMachine.count]+"\n"+TocMachine.date[TocMachine.count] + "\n" + str(TocMachine.num[TocMachine.count])+"\n\n⚠️食譜推薦一定要輸入至少兩項食材，即可點選「推薦食譜」\n⚠️欲新增食材務必先點選「開始記錄」\n🐤可點選「查看冰箱」檢視冰箱現有食材呦！")
         scheduler = BackgroundScheduler()
-        intervalTrigger=DateTrigger(run_date=expire.split()[0]+'-'+expire.split()[1]+'-'+expire.split()[2]+ 'T08:00:00+08:00')
+        intervalTrigger=DateTrigger(run_date=expire.split()[0]+'-'+expire.split()[1]+'-'+expire.split()[2]+ 'T18:28:00+08:00')
         scheduler.add_job(TocMachine.my_job, intervalTrigger, id='my_job_id'+str(TocMachine.count))
-        scheduler.start()
+        scheduler.start() 
  
          
          
@@ -475,5 +476,5 @@ Step4 ：人名標籤
         print("Leaving state2")
 
 
-    
+     
  
